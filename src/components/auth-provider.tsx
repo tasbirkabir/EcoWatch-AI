@@ -8,7 +8,7 @@ type AuthContextType = {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  signup: (email: string, password: string, fullName: string) => Promise<void>;
+  signup: (email: string, password: string, fullName: string, orgId?: string | null) => Promise<void>;
   logout: () => Promise<void>;
 };
 
@@ -20,26 +20,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isSupabaseConfigured() && supabase) {
-      // 1. Get initial session
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (session?.user) {
           setUser({
             id: session.user.id,
             email: session.user.email || '',
-            full_name: session.user.user_metadata?.full_name || 'Eco Watcher',
+            full_name: session.user.user_metadata?.full_name || 'TerraMind Inspector',
+            org_id: session.user.user_metadata?.org_id || null,
             created_at: session.user.created_at,
           });
         }
         setLoading(false);
       });
 
-      // 2. Listen for auth changes
       const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
         if (session?.user) {
           setUser({
             id: session.user.id,
             email: session.user.email || '',
-            full_name: session.user.user_metadata?.full_name || 'Eco Watcher',
+            full_name: session.user.user_metadata?.full_name || 'TerraMind Inspector',
+            org_id: session.user.user_metadata?.org_id || null,
             created_at: session.user.created_at,
           });
         } else {
@@ -52,8 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         subscription.unsubscribe();
       };
     } else {
-      // 3. Fallback mock session
-      const savedUser = localStorage.getItem('ecowatch-user');
+      const savedUser = localStorage.getItem('terramind-user');
       if (savedUser) {
         setUser(JSON.parse(savedUser));
       }
@@ -64,19 +63,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (isConfiguredForSupabase()) {
+        const { error } = await supabase!.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        // Mock Login
-        // In mock mode, any password works. We'll find or create a mock profile.
+        // Mock Login: if email has 'inspector' or 'admin', assign to Ecology Commission (org-1)
+        const isInspector = email.includes('inspector') || email.includes('admin') || email.includes('ngo');
         const mockUser: User = {
           id: `user-${email.split('@')[0]}`,
           email,
-          full_name: email.split('@')[0].toUpperCase(),
+          full_name: isInspector ? 'Inspector Jenkins' : email.split('@')[0].toUpperCase(),
+          org_id: isInspector ? 'org-1' : null,
           created_at: new Date().toISOString(),
         };
-        localStorage.setItem('ecowatch-user', JSON.stringify(mockUser));
+        localStorage.setItem('terramind-user', JSON.stringify(mockUser));
         setUser(mockUser);
       }
     } finally {
@@ -84,16 +84,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const signup = async (email: string, password: string, fullName: string) => {
+  const signup = async (email: string, password: string, fullName: string, orgId?: string | null) => {
     setLoading(true);
     try {
-      if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.auth.signUp({
+      if (isConfiguredForSupabase()) {
+        const { error } = await supabase!.auth.signUp({
           email,
           password,
           options: {
             data: {
               full_name: fullName,
+              org_id: orgId || null
             },
           },
         });
@@ -104,9 +105,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           id: `user-${Date.now()}`,
           email,
           full_name: fullName,
+          org_id: orgId || null,
           created_at: new Date().toISOString(),
         };
-        localStorage.setItem('ecowatch-user', JSON.stringify(mockUser));
+        localStorage.setItem('terramind-user', JSON.stringify(mockUser));
         setUser(mockUser);
       }
     } finally {
@@ -117,16 +119,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setLoading(true);
     try {
-      if (isSupabaseConfigured() && supabase) {
-        const { error } = await supabase.auth.signOut();
+      if (isConfiguredForSupabase()) {
+        const { error } = await supabase!.auth.signOut();
         if (error) throw error;
       } else {
-        localStorage.removeItem('ecowatch-user');
+        localStorage.removeItem('terramind-user');
       }
       setUser(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const isConfiguredForSupabase = () => {
+    return isSupabaseConfigured() && supabase !== null;
   };
 
   return (

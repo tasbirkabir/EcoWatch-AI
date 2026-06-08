@@ -12,20 +12,17 @@ type ThemeContextType = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark'); // Default to dark mode for climate-tech look
+  const [theme, setTheme] = useState<Theme>('dark'); // default is dark for modern SaaS tech theme
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('ecowatch-theme') as Theme;
+    const savedTheme = localStorage.getItem('terramind-theme') as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
       document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     } else {
-      // Check device preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
-      setTheme(initialTheme);
-      document.documentElement.classList.toggle('dark', initialTheme === 'dark');
+      setTheme('dark');
+      document.documentElement.classList.add('dark');
     }
     setMounted(true);
   }, []);
@@ -33,7 +30,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const toggleTheme = () => {
     const nextTheme = theme === 'light' ? 'dark' : 'light';
     setTheme(nextTheme);
-    localStorage.setItem('ecowatch-theme', nextTheme);
+    localStorage.setItem('terramind-theme', nextTheme);
     document.documentElement.classList.toggle('dark', nextTheme === 'dark');
   };
 

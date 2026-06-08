@@ -1,113 +1,103 @@
-# EcoWatch AI — Environmental Incident Reporting Platform
+# TerraMind AI — AI-Powered Environmental Intelligence Network
 
-> **See it. Report it. Protect it.**
+> **Dev Season of Code (DSOC) – Summer Edition 2026**
 
-EcoWatch AI is a production-quality, AI-powered environmental monitoring platform. It empowers citizens to document and track ecological threats in real time, validating submissions using state-of-the-art vision models and community consensus.
+TerraMind AI is a startup-grade SaaS platform designed to transition environmental hazard monitoring from reactive reporting to predictive, validated, and coordinates-driven ecological intelligence. 
 
----
-
-## 🚀 Key Features
-
-*   **AI-Powered Vision Diagnostics**: Uses Gemini Vision API to instantly classify incidents (illegal dumping, water/air pollution, deforestation, hazardous waste), estimate severity levels, and generate ecological impact evaluations.
-*   **Dual-Mode Storage Engine**: Operates seamlessly in a **mock fallback state** (utilizing LocalStorage and an in-memory server database) for quick setups and demos, and transitions to a live **Supabase Postgres + Auth** environment when credentials are configured.
-*   **Command Center Analytics**: Visualizes statistics with Recharts, highlighting classification breakdowns, monthly trends, severity slices, and high-risk hotspots.
-*   **Interactive Geolocation Map**: Renders a dark-themed Leaflet Map plot representing active records. Markers display distinct color codes and icons based on severity and category.
-*   **Community Verification System**: Enables users to confirm or dispute reports. Active validation dynamically updates the report status and composite risk scores.
-*   **Before & After Recovery Logs**: Citizens can upload recovery photos on active incidents, invoking Gemini image comparisons to evaluate cleanup percentages.
+Designed for communities, NGOs, and environmental protection agencies, TerraMind AI automates threat classification using computer vision, maps localized risks using a five-factor mathematical model, and forecasts incident clusters using custom time-series analytics.
 
 ---
 
-## 🛠 Tech Stack
+## 🚀 Key Innovation Highlights
 
-*   **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS, Lucide Icons.
-*   **Mapping**: Leaflet Maps (OpenStreetMap, CartoDB tiles).
-*   **Charts**: Recharts.
-*   **AI**: Google Gemini Vision (`gemini-1.5-flash` model).
-*   **Backend & DB**: Supabase (PostgreSQL, Supabase Auth).
-*   **Hosting Ready**: Vercel.
+### 1. Computer Vision Diagnostics (Gemini Vision AI)
+When citizens upload incident photos (debris, water discharge, logging, flares), the platform invokes the **Gemini Vision API** (or falls back to an intelligent mock simulation) to:
+- Instantly classify the threat type.
+- Gauge the inspection confidence percentage.
+- Assess severity index levels (`Low`, `Moderate`, `High`, `Critical`).
+- Outline the direct ecological consequences.
+- Recommend detailed remediation/cleanup guides for authorities.
+
+### 2. Composed 3-Month Time-Series Forecasting
+Using custom statistical models exposed via `/api/predict`, the platform:
+- Analyzes regional history to plot future incident counts over a 3-month window.
+- Visualizes trends with composite area and trend line charts using **Recharts**.
+- Identifies predictive coordinate centers showing high probability of future hazards.
+
+### 3. Five-Factor Risk Engine
+Prioritizes reports using a composite score $R \in [0, 100]$:
+$$R = \text{clip}\left( 3.5 \cdot S + 1.5 \cdot V + 2.0 \cdot P + 2.0 \cdot E + 1.0 \cdot F, \, 0, \, 100 \right)$$
+Where:
+- $S$: Gemini Severity Level ($[2, 10]$)
+- $V$: Community Validation Index ($[-5, 10]$)
+- $P$: Proximity Population Density ($[1, 10]$)
+- $E$: Environmental Sensitivity Coefficient ($[1, 10]$)
+- $F$: Neighboring Incident Frequency ($[1, 10]$)
+
+### 4. Laplace Consensus Trust Scoring
+Leverages Laplace smoothing to prevent manipulation and divide-by-zero errors in community validation:
+$$T = \frac{\text{confirms} + 1}{\text{confirms} + \text{disputes} + 2} \times 100$$
+Ensures initial reports with zero votes sit safely at a baseline of $50\%$ trust, dynamically scaling as verification arrives.
+
+### 5. NGO & Government Command Portal
+Verifying authorities can assign incidents to their agency, allocate specific resources (e.g. soil kits, waste trucks), and log progress. It features:
+- **Remediation Metrics**: Logs waste removed (kg), area restored (sqm), and risk reduction percentages.
+- **Priority Dispatch Queues**: Auto-prioritized by risk score, allowing rapid routing of critical incidents.
 
 ---
 
-## 📂 Project Directory Structure
+## 🛠 System Architecture
+
+```mermaid
+graph TD
+    A[Citizen UI / React components] -->|POST /api/incidents| B[API Route handler]
+    A -->|POST /api/analyze| C[Gemini AI Vision Helper]
+    B -->|Database Query| D[Dual-Mode DB Layer]
+    D -->|Supabase Client| E[Live Supabase PostgreSQL]
+    D -->|In-Memory / LocalStorage| F[Mock Database & Seed Store]
+    B -->|Compute Risk| G[Risk Score Engine]
+    G -->|Composite Risk Score| B
+    B -->|Fetch Updates| H[API Route updates/votes]
+    A -->|NGO Dispatch Panel| I[Authority Dashboard]
+    I -->|Log Remediation| B
+```
+
+---
+
+## 📂 Codebase Structure
 
 ```
-ecowatch-ai/
+terramind-ai/
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx             # Root layout with Glassmorphism Theme & Providers
-│   │   ├── page.tsx               # High-converting climate-tech Landing Page
-│   │   ├── login/                 # Auth: Login Page
-│   │   ├── signup/                # Auth: Signup Page
-│   │   ├── dashboard/             # Analytics, Interactive Map, Reports Feed, AI Summaries
-│   │   │   └── page.tsx
-│   │   ├── report/                # Submission page with Live Gemini Preview & GPS Map
-│   │   │   └── page.tsx
-│   │   ├── reports/
-│   │   │   └── [id]/              # Details, Before/After update upload, confirmation system
-│   │   │       └── page.tsx
+│   │   ├── page.tsx               # Rebranded Palantir-inspired SaaS Landing Page
+│   │   ├── layout.tsx             # Root layout with Theme and Auth Providers
+│   │   ├── globals.css            # Base Tailwind definitions + Glassmorphism animations
+│   │   ├── login/ & signup/       # Rebranded auth screens
+│   │   ├── report/                # GPS reporting wizard with Live Gemini Vision audit
+│   │   ├── reports/               # Incident registries with Laplace trust scoring
+│   │   │   └── [id]/              # Details timeline, voting panels, and cleanup tracking
+│   │   ├── dashboard/             # Recharts command center, predictive heatmap grids
+│   │   │   └── authority/         # NGO/Gov agency dispatch portal
 │   │   └── api/
-│   │       ├── analyze/           # AI Image Analysis endpoint (Gemini Vision API)
-│   │       ├── reports/           # GET/POST reports handler
-│   │       │   └── [id]/
-│   │       │       ├── route.tsx  # GET report detail handler
-│   │       │       ├── votes/
-│   │       │       │   └── route.ts # POST vote handler
-│   │       │       └── updates/
-│   │       │           └── route.ts # GET/POST updates handler
-│   │   components/
-│   │   ├── theme-provider.tsx     # Dark / Light Mode provider
-│   │   ├── navigation.tsx         # Modern glassmorphic header / mobile nav
-│   │   ├── leaflet-map.tsx        # Dynamic Leaflet component (No API key required)
-│   │   ├── auth-provider.tsx      # Dual-mode authentication wrapper
+│   │       ├── incidents/         # GET/POST reports & updates endpoints
+│   │       ├── analyze/           # Quick AI image diagnostic scanner
+│   │       └── predict/           # 3-month forecast models & coordinates generator
+│   ├── components/
+│   │   ├── navigation.tsx         # Modern tech header navigation
+│   │   ├── leaflet-map.tsx        # High-density Leaflet map displaying active/predicted pins
+│   │   ├── theme-provider.tsx     # Theme wrapper with client hydration safety
+│   │   └── auth-provider.tsx      # Dual-mode authentication store
 │   ├── lib/
-│   │   ├── db.ts                  # Dual-mode database layer (Supabase vs global memory)
-│   │   ├── gemini.ts              # Gemini API service helper (real vs simulation)
-│   │   ├── risk.ts                # Calculation helper for Risk Scores
-│   │   └── utils.ts               # CSS class merger utility
-│   ├── types/
-│   │   └── index.ts               # Core model interfaces
-│   └── styles/
-│       └── globals.css            # Base Tailwind definitions + Glassmorphism animations
-├── public/                        # Static assets
-├── schema.sql                     # Supabase database initialization queries
+│   │   ├── db.ts                  # Dual-mode Supabase/memory database manager
+│   │   ├── gemini.ts              # Gemini Generative AI SDK wrapper
+│   │   └── risk.ts                # Five-factor risk scoring engine
+│   └── types/
+│       └── index.ts               # Core TypeScript definitions (includes RecoveryStatus)
+├── schema.sql                     # Supabase tables setup scripts (9 tables)
 ├── package.json
-├── tsconfig.json
-├── tailwind.config.ts
-└── .env.example                   # Environment credentials blueprint
+└── tsconfig.json
 ```
-
----
-
-## 🛢 Database Schema (PostgreSQL)
-
-The platform is designed around 5 interconnected relational tables. Refer to [schema.sql](file:///C:/Users/WALTON/.gemini/antigravity/scratch/ecowatch-ai/schema.sql) to set them up:
-
-*   **`users`**: Stores synchronized user accounts (email, full name, dates) linked to Supabase Auth.
-*   **`reports`**: Holds incident locations (latitude, longitude), classifications, severity level, status, and computed composite risk index.
-*   **`report_votes`**: Stores user confirmations or disputes, ensuring a unique constraint per report-user pair.
-*   **`report_updates`**: Keeps history logs of cleanup pictures, progress notes, and Gemini comparison outcomes.
-*   **`ai_analysis`**: Documents Gemini Vision diagnostic outcomes, logs confidence percentages, and saves raw responses.
-
----
-
-## 🔌 API Endpoints Documentation
-
-All requests process JSON bodies and parameters:
-
-1.  **`GET /api/reports`**: Fetches all reports.
-    *   *Parameters*: `category`, `severity`, `status`, `search` (text search).
-2.  **`POST /api/reports`**: Submits a report.
-    *   *Body*: `{ title, description, category, latitude, longitude, location_name, image_url, user_id }`
-    *   *Behavior*: Saves record -> Triggers Gemini Analysis -> Saves AI details -> Updates report severity & risk -> Returns report.
-3.  **`GET /api/reports/[id]`**: Retrieves specific incident details and its AI analysis.
-4.  **`POST /api/reports/[id]/votes`**: Votes on a report.
-    *   *Body*: `{ userId, voteType }` (where `voteType` is 'confirm' | 'dispute')
-    *   *Behavior*: Logs vote -> Recalculates risk -> Updates status.
-5.  **`GET /api/reports/[id]/updates`**: Fetches before & after timeline logs.
-6.  **`POST /api/reports/[id]/updates`**: Log recovery follow-ups.
-    *   *Body*: `{ userId, image_url, description }`
-    *   *Behavior*: Retrieves original image -> Calls Gemini Image Comparison -> Logs recovery percentages -> Resolves incident if recovered.
-7.  **`POST /api/api/analyze`**: Performs quick, standalone photo scans during submission step.
 
 ---
 
@@ -117,52 +107,37 @@ All requests process JSON bodies and parameters:
 *   Node.js (v18+) and npm installed.
 
 ### Steps
-1.  **Extract/Navigate** to the project directory:
+1.  **Navigate** to the project directory:
     ```bash
-    cd ecowatch-ai
+    cd terramind-ai
     ```
 2.  **Install dependencies**:
     ```bash
     npm install
     ```
 3.  **Setup environment files**:
-    Clone the env blueprint to configure options:
-    ```bash
-    cp .env.example .env.local
-    ```
-    *(You can leave these blank; the application will launch in high-fidelity mock mode immediately!)*
+    Create a `.env.local` file in the root directory:
+    ```env
+    # Gemini API Key (Optional, fallback simulations will execute if empty)
+    GEMINI_API_KEY=your_gemini_api_key_here
 
-4.  **Start development server**:
+    # Supabase Credentials (Optional, database runs in mock memory mode if empty)
+    NEXT_PUBLIC_SUPABASE_URL=https://your-ref.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+    SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+    ```
+4.  **Run Development Server**:
     ```bash
     npm run dev
     ```
     Open `http://localhost:3000` to review the application.
 
----
-
-## ⚡ Supabase Setup (Optional)
-
-To connect live Supabase resources:
-1.  Create a project on [Supabase.com](https://supabase.com).
-2.  Open the **SQL Editor** in the Supabase console, paste the contents of `schema.sql`, and execute it.
-3.  Navigate to **Project Settings > API** and copy the project URL and Anon key.
-4.  Paste these credentials in your local `.env.local` file:
-    ```env
-    NEXT_PUBLIC_SUPABASE_URL=https://your-ref.supabase.co
-    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+5.  **Build Production Bundle**:
+    ```bash
+    npm run build
     ```
-5.  Restart your dev server. The application will automatically connect to your PostgreSQL instance.
 
 ---
 
-## ☁️ Vercel Deployment Guide
-
-Deploying Next.js 15 to Vercel is straightforward:
-
-1.  Push your code to a GitHub, GitLab, or Bitbucket repository.
-2.  Import the repository into your [Vercel Dashboard](https://vercel.com).
-3.  Under **Environment Variables**, configure:
-    *   `NEXT_PUBLIC_SUPABASE_URL` (optional)
-    *   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (optional)
-    *   `GEMINI_API_KEY` (optional - for live AI Vision)
-4.  Click **Deploy**. Vercel will automatically build the Next.js static assets, bundle edge handlers, and host the platform.
+## 🛡 License
+This project is licensed under the MIT License. Developed for the Dev Season of Code (DSOC) – Summer Edition 2026.

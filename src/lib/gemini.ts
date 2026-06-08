@@ -24,6 +24,7 @@ export interface AIAnalysisResult {
   confidence: number;
   severity: IncidentSeverity;
   environmental_impact: string;
+  recommended_action: string;
 }
 
 export interface AIComparisonResult {
@@ -39,13 +40,11 @@ export interface AIComparisonResult {
 async function runRealGeminiAnalysis(imageBase64: string): Promise<AIAnalysisResult> {
   const { data, mimeType } = cleanBase64(imageBase64);
   
-  // Initialize the Generative Client
-  // Note: Standard Next.js usage of GoogleGenAI SDK
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
   const prompt = `
-    Analyze this image of an environmental incident. You are a professional climate scientist.
+    Analyze this image of an environmental incident. You are a professional climate scientist and senior environmental inspector.
     Analyze the image and return your findings in JSON format containing the exact keys below.
     Do not wrap the response in any markdown code blocks (e.g. \`\`\`json). Return ONLY the raw JSON string.
 
@@ -53,8 +52,9 @@ async function runRealGeminiAnalysis(imageBase64: string): Promise<AIAnalysisRes
     {
       "detected_issue": "Short descriptive title of the specific issue detected",
       "confidence": 95, // Integer from 0 to 100 representing confidence
-      "severity": "High", // Must be exactly one of: "Low", "Medium", "High", "Critical"
-      "environmental_impact": "Detailed explanation of the ecological consequences (1-2 sentences)"
+      "severity": "High", // Must be exactly one of: "Low", "Moderate", "High", "Critical"
+      "environmental_impact": "Detailed explanation of the ecological consequences (1-2 sentences)",
+      "recommended_action": "Precise recommended mitigation/cleanup action for authorities (1-2 sentences)"
     }
   `;
 
@@ -68,15 +68,15 @@ async function runRealGeminiAnalysis(imageBase64: string): Promise<AIAnalysisRes
   const response = await model.generateContent([prompt, imagePart]);
   const text = response.response.text().trim();
   
-  // Parse JSON from output
   try {
     const cleanedText = text.replace(/```json/g, '').replace(/```/g, '').trim();
     const result = JSON.parse(cleanedText);
     return {
       detected_issue: result.detected_issue || 'Environmental Threat',
       confidence: Number(result.confidence) || 85,
-      severity: (result.severity as IncidentSeverity) || 'Medium',
-      environmental_impact: result.environmental_impact || 'No specific impact details retrieved.'
+      severity: (result.severity as IncidentSeverity) || 'Moderate',
+      environmental_impact: result.environmental_impact || 'No specific impact details retrieved.',
+      recommended_action: result.recommended_action || 'Inspect the site and deploy appropriate cleanup resources.'
     };
   } catch (err) {
     console.error('Error parsing Gemini output:', text, err);
@@ -148,52 +148,58 @@ function simulateImageAnalysis(category: string): AIAnalysisResult {
   const sims: Record<string, AIAnalysisResult> = {
     'Illegal Dumping': {
       detected_issue: 'Illegal Solid Waste & Debris Accumulation',
-      confidence: 93,
-      severity: 'Medium',
-      environmental_impact: 'Discarded plastics and construction materials block waterways, attract disease-carrying pests, and release toxic microplastics into the surrounding soil.'
+      confidence: 94,
+      severity: 'High',
+      environmental_impact: 'Discarded plastics, metal grids, and construction materials disrupt surface soils, obstruct waterways, and release non-biodegradable microplastics.',
+      recommended_action: 'Deploy municipal municipal waste cleanup trucks, install security cameras, and schedule regular ranger patrol rotations.'
     },
     'Water Pollution': {
-      detected_issue: 'Toxic Chemical/Cyanobacteria Water Contamination',
+      detected_issue: 'Cyanobacteria / Harmful Algae Overgrowth',
       confidence: 91,
       severity: 'Critical',
-      environmental_impact: 'Severe dissolved oxygen depletion threatens all aquatic life, kills macroinvertebrates, and can render the water body toxic to mammals.'
-    },
-    'Deforestation': {
-      detected_issue: 'Unauthorized Forest Clearcutting',
-      confidence: 88,
-      severity: 'High',
-      environmental_impact: 'Disrupts localized avian nesting sites, increases regional carbon output, and triggers severe soil instability, leading to erosion during rains.'
-    },
-    'Wildlife Threat': {
-      detected_issue: 'Habitat Fragmentation & Migration Obstruction',
-      confidence: 85,
-      severity: 'High',
-      environmental_impact: 'Physical blockages prevent native species (e.g., wild salmon) from reaching spawning grounds, threatening future generations.'
+      environmental_impact: 'Excessive nutrient loading leads to water column oxygen depletion, causing extensive fish die-offs and releasing hepatotoxins unsafe for animals.',
+      recommended_action: 'Alert regional water sampling board, deploy localized ultrasonic algae control systems, and post public warning signage.'
     },
     'Air Pollution': {
-      detected_issue: 'Industrial Soot & PM2.5 Emissions',
-      confidence: 90,
+      detected_issue: 'Refinery Flare Particulate Matter (PM2.5) venting',
+      confidence: 89,
       severity: 'High',
-      environmental_impact: 'Releases high concentrations of sulfur dioxide and fine particulate matter, contributing to local smog, respiratory illness, and acid rain precursors.'
+      environmental_impact: 'Direct soot and sulfur compounds vent into the troposphere, causing regional smog index elevation, acid rain triggers, and local respiratory hazards.',
+      recommended_action: 'Dispatch mobile air quality inspectors, audit refinery pressure valve safety codes, and warn surrounding communities to limit exposure.'
+    },
+    'Deforestation': {
+      detected_issue: 'Unpermitted Commercial Logging & Clear-cutting',
+      confidence: 88,
+      severity: 'High',
+      environmental_impact: 'Immediate destruction of forest canopy leads to loss of nesting zones, soil structure instability, and localized carbon absorption capacity loss.',
+      recommended_action: 'Notify Forestry Regulation Agency, run satellite radar checks on boundaries, and launch reforestation programs.'
+    },
+    'Wildlife Threats': {
+      detected_issue: 'Salmon Stream Obstruction / Habitat Blockage',
+      confidence: 87,
+      severity: 'Moderate',
+      environmental_impact: 'Physical barriers construct migration blocks, preventing native spawning salmon from returning upstream and disrupting regional food webs.',
+      recommended_action: 'Deploy stream restoration engineers, remove metal blockages manually, and monitor stream velocity levels.'
     },
     'Hazardous Waste': {
-      detected_issue: 'Corrosive Battery & Electronic Waste Spill',
+      detected_issue: 'Corrosive Lead-Acid Battery Dump & Chemical Spillage',
       confidence: 96,
       severity: 'Critical',
-      environmental_impact: 'Leaching heavy metals (lead, cadmium) and sulfuric acid sterilize topsoil, destroy vegetation, and pose a severe threat of groundwater aquifer contamination.'
+      environmental_impact: 'Acids and heavy metals (lead, cadmium) leach directly into topsoils, sterilizing flora and posing high risks of aquifer contamination.',
+      recommended_action: 'Cordon off area, deploy EPA-equivalent chemical response units, and dig sample wells to track groundwater toxicity.'
     }
   };
 
   return sims[category] || {
     detected_issue: 'General Environmental Incident',
     confidence: 85,
-    severity: 'Medium',
-    environmental_impact: 'Potential disruption of local micro-ecosystems and aesthetics. General cleanup recommended.'
+    severity: 'Moderate',
+    environmental_impact: 'Potential disruption of local micro-ecosystems and aesthetics. General cleanup recommended.',
+    recommended_action: 'Inspect the site and deploy appropriate cleanup resources.'
   };
 }
 
-function simulateImageComparison(afterImageBase64: string): AIComparisonResult {
-  // Let's make the simulation dynamic based on the size of the base64 or just random within a high recovery range (usually cleanup photos are better!)
+function simulateImageComparison(): AIComparisonResult {
   const rand = Math.random();
   let improvement_pct = 75;
   let pollution_reduced = 80;
@@ -244,12 +250,12 @@ export async function compareBeforeAfterImages(beforeBase64: string, afterBase64
       return await runRealGeminiComparison(beforeBase64, afterBase64);
     } catch (e) {
       console.warn('Real Gemini comparison API call failed, falling back to simulated comparison.', e);
-      return simulateImageComparison(afterBase64);
+      return simulateImageComparison();
     }
   } else {
     // Artificial latency for premium feel
     await new Promise((resolve) => setTimeout(resolve, 2500));
-    return simulateImageComparison(afterBase64);
+    return simulateImageComparison();
   }
 }
 

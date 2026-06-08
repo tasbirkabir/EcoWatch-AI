@@ -15,8 +15,8 @@ export async function POST(
       return NextResponse.json({ error: 'Missing or invalid vote fields' }, { status: 400 });
     }
 
-    const updatedReport = await castVote(id, userId, voteType as VoteType);
-    return NextResponse.json(updatedReport);
+    const updatedIncident = await castVote(id, userId, voteType as VoteType);
+    return NextResponse.json(updatedIncident);
   } catch (error: any) {
     console.error('Error casting vote:', error);
     return NextResponse.json({ error: error.message || 'Failed to submit validation' }, { status: 500 });
