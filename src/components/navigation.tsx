@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from './auth-provider';
 import { useTheme } from './theme-provider';
-import { Leaf, BarChart3, Map, List, LogOut, Sun, Moon, User, Menu, X, PlusCircle } from 'lucide-react';
+import { Leaf, BarChart3, Map, List, LogOut, Sun, Moon, User, Menu, X, PlusCircle, Brain } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -16,6 +16,7 @@ export default function Navigation() {
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
     { href: '/reports', label: 'Incidents Feed', icon: List },
+    { href: '/disclosure', label: 'AI Disclosure', icon: Brain },
   ];
 
   const isActive = (href: string) => pathname === href;
