@@ -1,0 +1,189 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+/* Define font references */
+@theme {
+  --color-brand-green: #10b981;
+  --color-brand-green-dark: #047857;
+  --color-accent-blue: #06b6d4;
+  --color-glass-bg: rgba(255, 255, 255, 0.45);
+  --color-glass-bg-dark: rgba(15, 23, 42, 0.65);
+  --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --border: rgba(226, 232, 240, 0.8);
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glow-color: rgba(16, 185, 129, 0.15);
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --muted: #64748b;
+  --muted-foreground: #94a3b8;
+}
+
+.dark {
+  --background: #090d16;
+  --foreground: #f1f5f9;
+  --border: rgba(30, 41, 59, 0.5);
+  --glass-bg: rgba(15, 23, 42, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glow-color: rgba(16, 185, 129, 0.25);
+  --card: #0e1626;
+  --card-foreground: #f1f5f9;
+  --muted: #94a3b8;
+  --muted-foreground: #475569;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  overflow-x: hidden;
+}
+
+/* Custom Glassmorphism Styles */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+}
+
+.dark .glass-panel {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glow-effect {
+  position: relative;
+}
+
+.glow-effect::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  background: linear-gradient(135deg, var(--color-brand-green), var(--color-accent-blue));
+  border-radius: inherit;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.glow-effect:hover::after {
+  opacity: 0.45;
+}
+
+/* Premium Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.4);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+/* Leaflet Map Styling Integrations */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  font-family: inherit;
+  z-index: 1;
+}
+
+.dark .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3);
+}
+
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+  border-radius: 8px !important;
+  overflow: hidden;
+}
+
+.leaflet-bar a {
+  background-color: var(--card) !important;
+  color: var(--foreground) !important;
+  border-bottom: 1px solid var(--border) !important;
+  transition: background 0.2s;
+}
+
+.leaflet-bar a:hover {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--glass-bg) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid var(--glass-border) !important;
+  color: var(--foreground) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2) !important;
+}
+
+.leaflet-popup-tip {
+  background: var(--glass-bg) !important;
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* Category & Severity Colored Badges */
+.category-badge-dumping { @apply bg-amber-500/10 text-amber-500 border border-amber-500/20; }
+.category-badge-water { @apply bg-cyan-500/10 text-cyan-500 border border-cyan-500/20; }
+.category-badge-forestry { @apply bg-emerald-500/10 text-emerald-500 border border-emerald-500/20; }
+.category-badge-wildlife { @apply bg-purple-500/10 text-purple-500 border border-purple-500/20; }
+.category-badge-air { @apply bg-sky-400/10 text-sky-400 border border-sky-400/20; }
+.category-badge-hazardous { @apply bg-rose-500/10 text-rose-500 border border-rose-500/20; }
+
+.severity-badge-low { @apply bg-slate-500/10 text-slate-400 border border-slate-500/20; }
+.severity-badge-medium { @apply bg-yellow-500/10 text-yellow-500 border border-yellow-500/20; }
+.severity-badge-high { @apply bg-orange-500/10 text-orange-500 border border-orange-500/20; }
+.severity-badge-critical { @apply bg-rose-600/20 text-rose-500 border border-rose-500/40 animate-pulse; }
+
+/* Custom Marker Styling for Maps */
+.custom-map-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3), 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-map-marker:hover {
+  transform: scale(1.2) translateY(-4px);
+}
